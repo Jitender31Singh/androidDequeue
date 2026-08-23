@@ -88,6 +88,7 @@ fun MainScreen(
                 com.appvendor.main.components.CardNavigationBar(
                     currentRoute = currentRoute,
                     userPermissions = state.userPermissions,
+                    userRoles = state.userRoles,
                     onNavigate = { route ->
                         nestedNavController.navigate(route) {
                             popUpTo(nestedNavController.graph.startDestinationId) {
@@ -189,6 +190,10 @@ fun MainScreen(
                     com.appvendor.feature_menu_items.presentation.import_menu.MenuImportFlow(
                         onNavigateBack = { nestedNavController.popBackStack() }
                     )
+                }
+                composable(Routes.PrinterSettings::class.qualifiedName ?: "printer_settings") {
+                    val vm: com.appvendor.feature_printer.presentation.PrinterSettingsViewModel = hiltViewModel()
+                    com.appvendor.feature_printer.presentation.PrinterSettingsScreen(viewModel = vm)
                 }
             }
         }

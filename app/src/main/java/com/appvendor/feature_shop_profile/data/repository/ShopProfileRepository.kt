@@ -153,6 +153,18 @@ class ShopProfileRepository @Inject constructor(
         }
     }
 
+    suspend fun updatePrinterConfig(config: PrinterConfig): ApiResult<PrinterConfig> {
+        return when (val result = safeApiCall { api.updatePrinterConfig(config.toDto()) }) {
+            is ApiResult.Success -> {
+                val dto = result.data.data
+                if (dto != null) ApiResult.Success(dto.toDomain())
+                else ApiResult.Error("No data returned")
+            }
+            is ApiResult.Error -> result
+            is ApiResult.Loading -> result
+        }
+    }
+
     private fun getFileFromUri(uri: Uri): File {
         val inputStream = context.contentResolver.openInputStream(uri)
         val tempFile = File.createTempFile("upload_", ".jpg", context.cacheDir)
@@ -208,5 +220,18 @@ fun PrinterConfigDto.toDomain(): PrinterConfig {
         networkPort = actual.networkPort ?: 9100,
         autoPrintOnReady = actual.autoPrintOnReady ?: false,
         autoPrintOnComplete = actual.autoPrintOnComplete ?: false
+    )
+}
+
+fun PrinterConfig.toDto(): PrinterConfigDto {
+    return PrinterConfigDto(
+        enabled = this.enabled,
+        printerType = this.printerType,
+        printerName = this.printerName,
+        paperWidth = this.paperWidth,
+        networkIp = this.networkIp,
+        networkPort = this.networkPort,
+        autoPrintOnReady = this.autoPrintOnReady,
+        autoPrintOnComplete = this.autoPrintOnComplete
     )
 }

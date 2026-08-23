@@ -69,4 +69,7 @@ sealed class Routes {
 
     @Serializable
     data object ImportMenu : Routes()
+
+    @Serializable
+    data object PrinterSettings : Routes()
 }

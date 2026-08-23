@@ -10,10 +10,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.Receipt
 import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +48,7 @@ data class NavigationItem(
 fun CardNavigationBar(
     currentRoute: String,
     userPermissions: Set<String>,
+    userRoles: Set<String> = emptySet(),
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -62,6 +65,10 @@ fun CardNavigationBar(
         
         if (userPermissions.contains("menu.view") || userPermissions.contains("staff.view")) {
             add(NavigationItem("Settings", Icons.Filled.Settings, Icons.Outlined.Settings, Routes.Settings::class.qualifiedName ?: ""))
+        }
+
+        if (userRoles.contains("ROLE_VENDOR_COUNTER")) {
+            add(NavigationItem("Printer", Icons.Filled.Print, Icons.Outlined.Print, Routes.PrinterSettings::class.qualifiedName ?: ""))
         }
     }
 

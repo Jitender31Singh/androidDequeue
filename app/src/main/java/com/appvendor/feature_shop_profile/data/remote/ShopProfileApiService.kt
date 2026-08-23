@@ -31,4 +31,7 @@ interface ShopProfileApiService {
 
     @GET("api/v1/vendors/me/printer")
     suspend fun getPrinterConfig(): ApiResponse<PrinterConfigDto>
+
+    @PATCH("api/v1/vendors/me/printer")
+    suspend fun updatePrinterConfig(@Body request: PrinterConfigDto): ApiResponse<PrinterConfigDto>
 }

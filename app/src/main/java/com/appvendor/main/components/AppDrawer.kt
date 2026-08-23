@@ -121,6 +121,7 @@ fun AppDrawer(
             com.appvendor.main.components.CardNavigationBar(
                 currentRoute = currentRoute,
                 userPermissions = userPermissions,
+                userRoles = userRoles,
                 onNavigate = onNavigateToRoute,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
