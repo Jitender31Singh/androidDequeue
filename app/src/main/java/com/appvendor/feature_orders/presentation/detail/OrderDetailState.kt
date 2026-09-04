@@ -16,5 +16,6 @@ data class OrderDetailState(
     val vendorDetails: VendorDetails? = null,
     val settingsData: SettingsData? = null,
     val printerConfig: com.appvendor.feature_shop_profile.domain.model.PrinterConfig? = null,
-    val triggerAutoPrint: Boolean = false
+    val triggerAutoPrint: Boolean = false,
+    val orderVisibilityStatuses: Set<String> = emptySet()
 )

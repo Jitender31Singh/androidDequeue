@@ -1,15 +1,18 @@
 package com.appvendor.main
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.provider.Settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.appvendor.core.datastore.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,11 +20,16 @@ import com.appvendor.core.network.safeApiCall
 import com.appvendor.core.network.ApiResult
 import com.appvendor.feature_dashboard.data.remote.VendorApiService
 import com.appvendor.feature_dashboard.data.remote.UpdateShopStatusRequest
+import com.appvendor.feature_auth.data.remote.AuthApiService
+import com.google.firebase.messaging.FirebaseMessaging
 
 @HiltViewModel
+@SuppressLint("HardwareIds")
 class MainViewModel @Inject constructor(
     private val userPreferences: UserPreferences,
-    private val vendorApi: VendorApiService
+    private val vendorApi: VendorApiService,
+    private val authApiService: AuthApiService,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _isBusinessActive = MutableStateFlow(false)
@@ -69,7 +77,17 @@ class MainViewModel @Inject constructor(
     }
 
     fun logout() {
+        val deviceId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
         viewModelScope.launch {
+            try {
+                authApiService.unregisterDevice(deviceId)
+                // Optionally delete FCM token if we don't want old tokens hanging around
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    FirebaseMessaging.getInstance().deleteToken()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             userPreferences.clearSession()
         }
     }

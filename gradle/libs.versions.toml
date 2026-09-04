@@ -66,6 +66,7 @@ coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutin
 
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 credential-manager = { group = "androidx.credentials", name = "credentials", version.ref = "credentialManager" }
 credential-manager-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentialManager" }

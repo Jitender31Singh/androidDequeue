@@ -18,4 +18,10 @@ interface AuthApiService {
 
     @retrofit2.http.GET("api/v1/auth/me/permissions")
     suspend fun getPermissions(): ApiResponse<PermissionsResponseData>
+
+    @POST("api/v1/devices/register")
+    suspend fun registerDevice(@Body request: DeviceRegistrationRequest): retrofit2.Response<Unit>
+
+    @retrofit2.http.DELETE("api/v1/devices/unregister/{deviceId}")
+    suspend fun unregisterDevice(@retrofit2.http.Path("deviceId") deviceId: String): retrofit2.Response<Unit>
 }

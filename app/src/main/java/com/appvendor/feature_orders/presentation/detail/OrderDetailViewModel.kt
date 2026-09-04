@@ -85,11 +85,24 @@ class OrderDetailViewModel @Inject constructor(
             kotlinx.coroutines.flow.combine(
                 userPreferences.userPermissions,
                 userPreferences.userRoles,
-                userPreferences.userShopName
-            ) { permissions, roles, shopName ->
-                Triple(permissions, roles, shopName)
-            }.collect { (permissions, roles, shopName) ->
-                _state.update { it.copy(userPermissions = permissions, userRoles = roles, shopName = shopName ?: "DeQueue Shop") }
+                userPreferences.userShopName,
+                userPreferences.orderVisibilityStatuses
+            ) { permissions, roles, shopName, visibilityStatuses ->
+                // Custom data class or array is needed since combine only supports up to 5 cleanly with Flow
+                listOf(permissions, roles, shopName, visibilityStatuses)
+            }.collect { values ->
+                val permissions = values[0] as Set<String>
+                val roles = values[1] as Set<String>
+                val shopName = values[2] as String? ?: "DeQueue Shop"
+                val visibilityStatuses = values[3] as Set<String>
+                _state.update { 
+                    it.copy(
+                        userPermissions = permissions, 
+                        userRoles = roles, 
+                        shopName = shopName,
+                        orderVisibilityStatuses = visibilityStatuses
+                    ) 
+                }
             }
         }
     }
@@ -98,7 +111,21 @@ class OrderDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             when (val result = repository.getOrderById(orderId)) {
-                is ApiResult.Success -> _state.update { it.copy(isLoading = false, order = result.data) }
+                is ApiResult.Success -> {
+                    val order = result.data
+                    val visibilityStatuses = _state.value.orderVisibilityStatuses
+                    if (visibilityStatuses.isNotEmpty() && !visibilityStatuses.contains(order.status.name)) {
+                        _state.update { 
+                            it.copy(
+                                isLoading = false, 
+                                order = null,
+                                error = "This order is currently in ${order.status.displayLabel()} state, which is assigned to another role."
+                            ) 
+                        }
+                    } else {
+                        _state.update { it.copy(isLoading = false, order = order) }
+                    }
+                }
                 is ApiResult.Error -> _state.update { it.copy(isLoading = false, error = result.message) }
                 is ApiResult.Loading -> {}
             }

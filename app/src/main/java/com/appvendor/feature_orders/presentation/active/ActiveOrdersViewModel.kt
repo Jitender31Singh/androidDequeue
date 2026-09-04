@@ -134,8 +134,37 @@ class ActiveOrdersViewModel @Inject constructor(
     private fun setupWebSocket() {
         viewModelScope.launch {
             val vendorId = userPreferences.userVendorId.firstOrNull() ?: return@launch
-            stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, "ws://192.168.31.95:8080/ws/websocket")
-            stompClient?.connect()
+            val token = userPreferences.userToken.firstOrNull() ?: ""
+            
+            val baseUrl = com.appvendor.core.utils.Constants.BASE_URL
+            val wsUrl = baseUrl.replace("http://", "ws://").replace("https://", "wss://") + "ws/websocket"
+            
+            val httpHeaders = mapOf("Authorization" to "Bearer $token")
+            stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, wsUrl, httpHeaders)
+            stompClient?.withClientHeartbeat(10000)?.withServerHeartbeat(10000)
+
+            stompClient?.lifecycle()?.subscribe { event ->
+                when (event.type) {
+                    ua.naiksoftware.stomp.dto.LifecycleEvent.Type.OPENED -> {
+                        println("STOMP active orders connection opened")
+                    }
+                    ua.naiksoftware.stomp.dto.LifecycleEvent.Type.CLOSED -> {
+                        println("STOMP active orders connection closed, attempting to reconnect...")
+                        Thread.sleep(3000)
+                        val reconnectToken = kotlinx.coroutines.runBlocking { userPreferences.userToken.firstOrNull() } ?: ""
+                        val headers = listOf(ua.naiksoftware.stomp.dto.StompHeader("Authorization", "Bearer $reconnectToken"))
+                        stompClient?.connect(headers)
+                    }
+                    ua.naiksoftware.stomp.dto.LifecycleEvent.Type.ERROR -> {
+                        event.exception?.printStackTrace()
+                    }
+                    else -> {}
+                }
+            }
+
+            val headers = listOf(ua.naiksoftware.stomp.dto.StompHeader("Authorization", "Bearer $token"))
+            stompClient?.connect(headers)
+
             stompClient?.topic("/topic/vendor/$vendorId")?.subscribe({
                 // Instantly refresh when any order event fires
                 loadActiveOrders()

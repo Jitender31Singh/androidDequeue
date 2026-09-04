@@ -131,7 +131,10 @@ fun MainScreen(
                         }
                     )
                 }
-                composable("order_detail/{orderId}") {
+                composable(
+                    route = "order_detail/{orderId}",
+                    deepLinks = listOf(androidx.navigation.navDeepLink { uriPattern = "appvendor://order_detail/{orderId}" })
+                ) {
                     val vm: com.appvendor.feature_orders.presentation.detail.OrderDetailViewModel = hiltViewModel()
                     com.appvendor.feature_orders.presentation.detail.OrderDetailScreen(
                         viewModel = vm,
